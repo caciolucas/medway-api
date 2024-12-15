@@ -12,8 +12,6 @@ logger = logging.getLogger("django")
 
 # NOTE: Could also use a ModelSerializer but I'll use a Serializer to have more control over the fields.
 
-# NOTE: Could also add the business logic in a AnswerService class, but to avoid spreading the logic, I'll leave it here.
-
 
 class AnswerQuestionSerializer(serializers.Serializer):
     question_id = serializers.PrimaryKeyRelatedField(queryset=Question.objects.all())
@@ -57,25 +55,24 @@ class AnswerExamSerializer(serializers.Serializer):
 
         return super().validate(attrs)
 
-    @transaction.atomic
     def create(self, validated_data):
-        question_responses = validated_data.pop("question_responses")
-        validated_data["student"] = validated_data.pop("student_id")
+        with transaction.atomic():
+            question_responses = validated_data.pop("question_responses")
+            validated_data["student"] = validated_data.pop("student_id")
 
-        exam_response = ExamAnswer.objects.create(
-            exam=self.context["exam"], **validated_data
-        )
-        for question_response in question_responses:
-            question_response["selected_alternative"] = question_response.pop(
-                "selected_alternative_id"
-            )
-            question_response["question"] = question_response.pop("question_id")
-            QuestionAnswer.objects.create(
-                exam_response=exam_response, **question_response
+            exam_response = ExamAnswer.objects.create(
+                exam=self.context["exam"], **validated_data
             )
 
-        # NOTE: Could also trigger this in a signal. But to center all business logic in the serializer, I'll leave it here.
-        # NOTE: Adding a retry policy to avoid overloading the system in case of a failure.
+            for question_response in question_responses:
+                question_response["selected_alternative"] = question_response.pop(
+                    "selected_alternative_id"
+                )
+                question_response["question"] = question_response.pop("question_id")
+                QuestionAnswer.objects.create(
+                    exam_response=exam_response, **question_response
+                )
+
         evaluate_exam.apply_async(
             args=(exam_response.id,),
             retry=True,
@@ -86,7 +83,6 @@ class AnswerExamSerializer(serializers.Serializer):
                 "interval_max": 0.5,
             },
         )
-        logger.info(f"BBBBBBBBBBBBBB Started tasks to evaluate exam {exam_response.id}")
 
         return exam_response
 

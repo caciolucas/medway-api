@@ -7,7 +7,7 @@ from django.utils.translation import gettext_lazy as _
 class ExamAnswer(models.Model):
     PENDING = "PENDING"
     PROCESSING = "PROCESSING"
-    EVALUATED = "EVALUETED"
+    EVALUATED = "EVALUATED"
     STATUS_CHOICES = [
         (PENDING, _("Pending")),
         (PROCESSING, _("Processing")),

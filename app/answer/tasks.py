@@ -6,16 +6,11 @@ from django.db import transaction
 
 logger = logging.getLogger("django")
 
-@shared_task()
-def test_task():
-    logger.info("Test task executed")
-
 
 @shared_task()
 def evaluate_exam(exam_answer_id: int):
     try:
         with transaction.atomic():
-            logger.info(f"Evaluating exam answer {exam_answer_id}")
             exam_answer = ExamAnswer.objects.select_for_update().get(id=exam_answer_id)
             exam_answer.status = ExamAnswer.PROCESSING
             exam_answer.save()
@@ -26,7 +21,6 @@ def evaluate_exam(exam_answer_id: int):
                 )
                 question_answer.save()
 
-            logger.info(f"Exam answer {exam_answer_id} evaluated")
             exam_answer.status = ExamAnswer.EVALUATED
             exam_answer.save()
     except Exception as e:
