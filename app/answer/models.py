@@ -7,11 +7,11 @@ from django.utils.translation import gettext_lazy as _
 class ExamAnswer(models.Model):
     PENDING = "PENDING"
     PROCESSING = "PROCESSING"
-    EVALUETED = "EVALUETED"
+    EVALUATED = "EVALUETED"
     STATUS_CHOICES = [
         (PENDING, _("Pending")),
         (PROCESSING, _("Processing")),
-        (EVALUETED, _("Evalueted")),
+        (EVALUATED, _("Evaluated")),
     ]
     student = models.ForeignKey(
         "student.Student", on_delete=models.CASCADE, related_name="responses"

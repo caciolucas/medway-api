@@ -2,6 +2,7 @@ from answer.models import ExamAnswer, QuestionAnswer
 from answer.tasks import evaluate_exam
 from django.db import transaction
 from question.models import Alternative, Question
+from question.serializers import AlternativeResultSerializer, QuestionSerializer
 from rest_framework import serializers
 from student.models import Student
 
@@ -41,6 +42,17 @@ class AnswerExamSerializer(serializers.Serializer):
 
         return value
 
+    def validate(self, attrs):
+        exam = self.context["exam"]
+        student = attrs["student_id"]
+
+        if ExamAnswer.objects.filter(exam=exam, student=student).exists():
+            raise serializers.ValidationError(
+                {"student_id": "Student already answered this exam"}
+            )
+
+        return super().validate(attrs)
+
     @transaction.atomic
     def create(self, validated_data):
         question_responses = validated_data.pop("question_responses")
@@ -58,18 +70,35 @@ class AnswerExamSerializer(serializers.Serializer):
                 exam_response=exam_response, **question_response
             )
 
-        evaluate_exam(exam_response.id)
         # NOTE: Could also trigger this in a signal. But to center all business logic in the serializer, I'll leave it here.
         # NOTE: Adding a retry policy to avoid overloading the system in case of a failure.
-        # evaluate_exam.apply_async(
-        #     args=(exam_response.id,),
-        #     retry=True,
-        #     retry_policy={
-        #         "max_retries": 3,
-        #         "interval_start": 0,
-        #         "interval_step": 0.2,
-        #         "interval_max": 0.5,
-        #     },
-        # )
+        evaluate_exam.apply_async(
+            args=(exam_response.id,),
+            retry=True,
+            retry_policy={
+                "max_retries": 3,
+                "interval_start": 0,
+                "interval_step": 0.2,
+                "interval_max": 0.5,
+            },
+        )
 
         return exam_response
+
+
+class QuestionAnswerResultSerializer(serializers.Serializer):
+    question = QuestionSerializer(read_only=True)
+    selected_alternative = AlternativeResultSerializer(read_only=True)
+    correct_alternative = AlternativeResultSerializer(read_only=True)
+    is_correct = serializers.BooleanField()
+
+
+class ExamAnswerSummarySerializer(serializers.Serializer):
+    total_questions = serializers.IntegerField()
+    correct_questions = serializers.IntegerField()
+    percentage = serializers.DecimalField(max_digits=5, decimal_places=2)
+
+
+class ExamAnswerResultSerializer(serializers.Serializer):
+    summary = ExamAnswerSummarySerializer()
+    question_answers = QuestionAnswerResultSerializer(many=True)
