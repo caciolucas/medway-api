@@ -12,6 +12,7 @@ Este repositório contém uma solução para o desafio proposto pela **Medway** 
     - [Endpoint 1 - Respondendo a avaliação](#endpoint-1---respondendo-a-avaliação)
     - [Endpoint 2 - Consultando o resultado](#endpoint-2---consultando-o-resultado)
   - [Testes](#testes)
+  - [Documentação](#documentação)
 
 ## Visão Geral
 O desafio da Medway envolve a implementação de duas rotas em uma aplicação Django:
@@ -34,7 +35,10 @@ Adicionalmente, para implementar uma solução robusta e escalável, foram utili
 - Redis
 - Docker
 
-Para otimizar e facilitar o carregamento de variaveis de ambiente foi adicionado o `python-decouple`.
+Também foram adicionadas as seguintes dependências:
+- `django-celery-results` para armazenar resultados.
+- `python-decouple` para carregar variáveis de ambiente.
+- `drf-yasg` para documentação com Swagger.
 
 ## Instalação e configuração
 O projeto inicialmente dispunha de um docker-compose com um banco de dados PostgreSQL e um container para a aplicação. Buscando a construção de uma aplicação robusta, escalável e mais alinhada com um projeto real, foram adicionados os containers do Redis, RabbitMQ e Celery.
@@ -106,6 +110,7 @@ Esse endpoint deve permitir que um usuário consulte o resultado de um *Exam* pr
       },
       "is_correct": true
     }
+    ...
   ]
 }
 ```
@@ -138,3 +143,7 @@ Ran 7 tests in 0.145s
 OK
 Destroying test database for alias 'default'...
 ```
+
+## Documentação
+
+Foi criada uma documentação para os endpoints utilizando o Swagger. A documentação pode ser acessada em `http://localhost:8000/swagger/` após a aplicação ser iniciada.
