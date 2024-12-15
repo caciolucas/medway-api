@@ -48,3 +48,8 @@ Thumbs.db
 *.mov
 *.wmv
 
+# Python's virtual environment
+venv/
+
+# Environment variables
+.env

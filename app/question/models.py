@@ -1,5 +1,4 @@
 from django.db import models
-
 from question.utils import AlternativesChoices
 
 
@@ -15,3 +14,8 @@ class Alternative(models.Model):
     content = models.TextField()
     option = models.IntegerField(choices=AlternativesChoices)
     is_correct = models.BooleanField(null=True)
+
+    def __str__(self):
+        return (
+            f"{self.question} - {self.content} {'(correct)' if self.is_correct else ''}"
+        )

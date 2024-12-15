@@ -1,11 +1,12 @@
 from django.db import models
-
 from question.models import Question
 
 
 class Exam(models.Model):
     name = models.CharField(max_length=100)
-    questions = models.ManyToManyField(Question, through='ExamQuestion', related_name='questions')
+    questions = models.ManyToManyField(
+        Question, through="ExamQuestion", related_name="exams"
+    )
 
     def __str__(self):
         return self.name
@@ -21,4 +22,4 @@ class ExamQuestion(models.Model):
         ordering = ['number']
 
     def __str__(self):
-        return f'{self.question} - {self.exam}'
+        return f"{self.question} - {self.exam}"
