@@ -7,6 +7,11 @@ from django.db import transaction
 logger = logging.getLogger("django")
 
 @shared_task()
+def test_task():
+    logger.info("Test task executed")
+
+
+@shared_task()
 def evaluate_exam(exam_answer_id: int):
     try:
         with transaction.atomic():

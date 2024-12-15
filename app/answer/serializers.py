@@ -1,3 +1,5 @@
+import logging
+
 from answer.models import ExamAnswer, QuestionAnswer
 from answer.tasks import evaluate_exam
 from django.db import transaction
@@ -5,6 +7,8 @@ from question.models import Alternative, Question
 from question.serializers import AlternativeResultSerializer, QuestionSerializer
 from rest_framework import serializers
 from student.models import Student
+
+logger = logging.getLogger("django")
 
 # NOTE: Could also use a ModelSerializer but I'll use a Serializer to have more control over the fields.
 
@@ -82,6 +86,7 @@ class AnswerExamSerializer(serializers.Serializer):
                 "interval_max": 0.5,
             },
         )
+        logger.info(f"BBBBBBBBBBBBBB Started tasks to evaluate exam {exam_response.id}")
 
         return exam_response
 

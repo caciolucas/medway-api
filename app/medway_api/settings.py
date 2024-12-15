@@ -12,7 +12,9 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 
+import sentry_sdk
 from decouple import config
+from sentry_sdk.integrations.django import DjangoIntegration
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -51,6 +53,7 @@ EXTERNAL_APPS = [
     "django_filters",
     "django_redis",
     "drf_yasg",
+    "django_celery_results",
 ]
 
 INSTALLED_APPS = DEFAULT_APPS + LOCAL_APPS + EXTERNAL_APPS
@@ -152,7 +155,11 @@ AUTH_USER_MODEL = "student.Student"
 
 # Celery
 
-CELERY_BROKER_URL = config("CELERY_BROKER_URL", "amqp://guest:guest@rabbitmq:5672//")
+CELERY_BROKER_URL = config(
+    "CELERY_BROKER_URL", "amqp://guest:guest@rabbitmq:5672/vhost"
+)
+CELERY_RESULT_BACKEND = "django-db"
+
 
 # Logging
 
@@ -190,3 +197,14 @@ CACHES = {
         },
     }
 }
+
+# Sentry
+
+sentry_sdk.init(
+    dsn=config("SENTRY_DSN"),
+    traces_sample_rate=1.0,
+    integrations=[DjangoIntegration()],
+    _experiments={
+        "continuous_profiling_auto_start": True,
+    },
+)

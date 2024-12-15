@@ -11,9 +11,11 @@ services:
       - POSTGRES_USER=teste
       - POSTGRES_PASSWORD=teste
       - POSTGRES_DB=teste
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672/vhost
     depends_on:
       - db
       - redis
+      - worker
     volumes:
       - ./app:/django/app
     ports:
@@ -24,6 +26,8 @@ services:
   db:
     restart: always
     image: postgres:latest
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=teste
       - POSTGRES_PASSWORD=teste
@@ -34,11 +38,15 @@ services:
   rabbitmq:
     container_name: medway-rabbitmq
     image: rabbitmq:3-management
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+      - RABBITMQ_DEFAULT_VHOST=vhost
+      
     ports:
       - "5672:5672"
       - "15672:15672"
     
-  
   redis:
     container_name: medway-redis
     image: redis:latest
@@ -57,8 +65,12 @@ services:
       - POSTGRES_USER=teste
       - POSTGRES_PASSWORD=teste
       - POSTGRES_DB=teste
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672/vhost
     depends_on:
-      - server
+      - rabbitmq
     volumes:
       - ./app:/django/app
     command: celery -A medway_api worker -l info
+
+volumes:
+  postgres_data:
