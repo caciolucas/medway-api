@@ -1,5 +1,6 @@
 from answer.models import ExamAnswer
 from question.models import Alternative
+from utils.decorators.cache import cache_result
 
 
 class AnswerService:
@@ -34,6 +35,7 @@ class AnswerService:
 
         return questions
 
+    @cache_result()
     @classmethod
     def get_exam_answer_results(cls, exam_id: int, student_id: int):
         exam_answer = ExamAnswer.objects.get(exam_id=exam_id, student_id=student_id)
