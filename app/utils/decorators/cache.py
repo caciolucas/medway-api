@@ -4,6 +4,8 @@ from functools import wraps
 
 from django.core.cache import cache
 
+# NOTE: This is a simply cache decorator that can be used to cache the result of a function
+# with a timeout, usin g the Django cache system. I've been using thisdecorator in my projects.
 
 def __build_cache_key(prefix, args, kwargs):
     key_elements = {

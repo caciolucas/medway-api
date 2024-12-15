@@ -38,9 +38,20 @@ DEFAULT_APPS = [
     "django.contrib.staticfiles",
 ]
 
-LOCAL_APPS = ["student", "question", "exam", "utils", "answer"]
+LOCAL_APPS = [
+    "student",
+    "question",
+    "exam",
+    "utils",
+    "answer",
+]
 
-EXTERNAL_APPS = ["rest_framework", "django_filters", "drf_yasg"]
+EXTERNAL_APPS = [
+    "rest_framework",
+    "django_filters",
+    "django_redis",
+    "drf_yasg",
+]
 
 INSTALLED_APPS = DEFAULT_APPS + LOCAL_APPS + EXTERNAL_APPS
 
@@ -81,11 +92,11 @@ WSGI_APPLICATION = "medway_api.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "medway",
-        "USER": "postgres",
-        "PASSWORD": "postgres",
-        "HOST": "localhost",
-        "PORT": "5432",
+        "NAME": config("POSTGRES_DB", "teste"),
+        "USER": config("POSTGRES_USER"),
+        "PASSWORD": config("POSTGRES_PASSWORD"),
+        "HOST": config("POSTGRES_HOST", "db"),
+        "PORT": config("POSTGRES_PORT", "5432"),
     }
 }
 

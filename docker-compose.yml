@@ -13,6 +13,7 @@ services:
       - POSTGRES_DB=teste
     depends_on:
       - db
+      - redis
     volumes:
       - ./app:/django/app
     ports:
@@ -29,3 +30,35 @@ services:
       - POSTGRES_DB=teste
     ports:
       - "5432:5432"
+
+  rabbitmq:
+    container_name: medway-rabbitmq
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    
+  
+  redis:
+    container_name: medway-redis
+    image: redis:latest
+    ports:
+      - "6379:6379"
+
+  worker:
+    container_name: medway-worker
+    build: 
+      context: .
+    restart: always
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DJANGO_SETTINGS_MODULE=medway_api.settings
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=teste
+      - POSTGRES_PASSWORD=teste
+      - POSTGRES_DB=teste
+    depends_on:
+      - server
+    volumes:
+      - ./app:/django/app
+    command: celery -A medway_api worker -l info
